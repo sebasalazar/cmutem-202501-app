@@ -48,7 +48,12 @@ class GeoScreenState extends State<GeoScreen> {
                   ),
                   MarkerLayer(
                     markers: [
-                      Marker(point: geo, width: 80, height: 80, child: const Icon(Icons.location_pin)),
+                      Marker(
+                        point: geo,
+                        width: 80,
+                        height: 80,
+                        child: const Icon(Icons.location_pin),
+                      ),
                     ],
                   ),
                 ],
