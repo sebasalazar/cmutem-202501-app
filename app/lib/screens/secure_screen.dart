@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hm/service/rest_service.dart';
+import 'package:hm/widgets/my_menu.dart';
 import 'package:logger/logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -29,11 +30,13 @@ class _SecureScreenStatus extends State<SecureScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: MyMenu(),
+      appBar: AppBar(title: Text("Página segura")),
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Center(child: Text("Mi nombre es $_name")),
-          Center(child: Text("La temperatura es $_temperature"))
+          Center(child: Text("La temperatura es $_temperature")),
         ],
       ),
     );
