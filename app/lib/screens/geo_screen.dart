@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:hm/widgets/my_menu.dart';
+import 'package:latlong2/latlong.dart';
 
 class GeoScreenState extends State<GeoScreen> {
-  Future<Position> _currentPosition() async {
+  Future<LatLng> _currentPosition() async {
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
       return Future.error('La ubicación está desactivada');
@@ -21,7 +23,8 @@ class GeoScreenState extends State<GeoScreen> {
       return Future.error("El permiso está permanentemente denegado");
     }
 
-    return await Geolocator.getCurrentPosition();
+    Position position = await Geolocator.getCurrentPosition();
+    return LatLng(position.latitude, position.longitude);
   }
 
   @override
@@ -29,31 +32,36 @@ class GeoScreenState extends State<GeoScreen> {
     return Scaffold(
       drawer: MyMenu(),
       appBar: AppBar(title: Text("Página de ubicación")),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Center(
-            child: FutureBuilder(
-              future: _currentPosition(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.done) {
-                  Position? position = snapshot.data;
-                  if (position != null) {
-                    return Text(
-                      "Latitud :${position.latitude} Longitud: ${position.longitude}",
-                    );
-                  } else {
-                    return const Text("No fue posible determinar su ubicación");
-                  }
-                } else if (snapshot.hasError) {
-                  return const Text("No fue posible determinar su ubicación");
-                } else {
-                  return const CircularProgressIndicator();
-                }
-              },
-            ),
-          ),
-        ],
+      body: FutureBuilder(
+        future: _currentPosition(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.done) {
+            LatLng? geo = snapshot.data;
+            if (geo != null) {
+              return FlutterMap(
+                options: MapOptions(initialCenter: geo, initialZoom: 17),
+                children: [
+                  TileLayer(
+                    urlTemplate:
+                        "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+                    userAgentPackageName: 'cl.utem.cm',
+                  ),
+                  MarkerLayer(
+                    markers: [
+                      Marker(point: geo, width: 80, height: 80, child: const Icon(Icons.location_pin)),
+                    ],
+                  ),
+                ],
+              );
+            } else {
+              return const Text("No fue posible determinar su ubicación");
+            }
+          } else if (snapshot.hasError) {
+            return const Text("No fue posible determinar su ubicación");
+          } else {
+            return const CircularProgressIndicator();
+          }
+        },
       ),
     );
   }
